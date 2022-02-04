@@ -1,0 +1,4 @@
+#!/bin/bash
+
+
+sudo -S <<< "$1" cat $2

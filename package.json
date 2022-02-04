@@ -1,11 +1,11 @@
 {
   "name": "logs",
-  "productName": "mysql-logs",
-  "version": "1.0.0",
+  "productName": "logs",
+  "version": "1.0.2",
   "description": "My Electron application description",
   "main": "src/index.js",
   "scripts": {
-    "start": "electron-forge start",
+    "start": "electron-forge  start",
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
@@ -46,8 +46,13 @@
   },
   "dependencies": {
     "@mysql/xdevapi": "^8.0.28",
+    "electron-osx-prompt": "^1.4.1",
+    "electron-prompt": "^1.7.0",
     "electron-squirrel-startup": "^1.0.0",
+    "electron-sudo": "^4.0.12",
+    "jquery": "^3.6.0",
     "mysql": "^2.18.1",
+    "sudo-prompt": "^9.2.1",
     "tailing-stream": "^0.2.0"
   },
   "devDependencies": {

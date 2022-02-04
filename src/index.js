@@ -1,8 +1,7 @@
 const { app, BrowserWindow ,ipcMain } = require('electron');
 const path = require('path');
 const mysql8 = require('./databases/mysql8');
-
-
+const prompt = require('electron-prompt');
 
 let database ;
 let mainWindow ;
@@ -15,6 +14,7 @@ const createWindow = () => {
   // Create the browser window.
   mainWindow = new BrowserWindow({
     webPreferences: {
+      enableRemoteModule: true,
       nodeIntegration: true,
       contextIsolation: false,
     },
@@ -26,7 +26,7 @@ const createWindow = () => {
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
   mainWindow.maximize();
   // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
 };
 
 ipcMain.handle("connectToDatabase",async (event, arg) => {
@@ -40,16 +40,39 @@ ipcMain.handle("connectToDatabase",async (event, arg) => {
   }catch (e){
     return e;
   }
-
 });
 
-ipcMain.on("editGeneralLogsStatus",async (event, arg) => {
-  console.log(arg);
-  await database.editGeneralLogsStatus("ON");
+ipcMain.handle("editGeneralLogsStatus",async (event, arg) => {
+  await database.editGeneralLogsStatus(arg);
 });
 
-ipcMain.on("getGeneralLogsStatus",async (event, arg) => {
-  console.log(await database.returnGeneralLogsStatus());
+ipcMain.handle("editPathOfGeneralLogs",async (event, arg) => {
+  await database.editPathOfGeneralLogs(arg);
+});
+
+ipcMain.handle("getGeneralLogsStatus",async (event, arg) => {
+  return await database.returnGeneralLogsStatus();
+});
+
+ipcMain.handle("getGeneralLogsFilePath",async (event, arg) => {
+  return await database.returnGeneralLogsFile();
+});
+
+ipcMain.handle("getUserRootPassword", async (event, arg) => {
+  try {
+    return await prompt({
+      title: 'Root Password',
+      label: 'Please enter your root password:',
+      value: '',
+      inputAttrs: {
+        type: 'password'
+      },
+      type: 'input'
+    });
+
+  }catch (e) {
+      return e;
+  };
 });
 
 
