@@ -1,7 +1,7 @@
 {
   "name": "logs",
   "productName": "logs",
-  "version": "1.0.2",
+  "version": "0.0.9",
   "description": "My Electron application description",
   "main": "src/index.js",
   "scripts": {
@@ -9,7 +9,11 @@
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
-    "lint": "echo \"No linting configured\""
+    "lint": "echo \"No linting configured\"",
+    "dist": "electron-builder --linux snap",
+    "run": "electron-builder start src/index.js",
+    "build:package": "electron-packager . --out=out",
+    "build:snap": "electron-installer-snap --src=out/logs-linux-x64 "
   },
   "keywords": [],
   "author": {
@@ -35,16 +39,26 @@
         },
         {
           "name": "@electron-forge/maker-deb",
-          "config": {}
+          "config": {
+            "options": {
+              "icon": "./src/fire.png"
+            }
+          }
         },
         {
           "name": "@electron-forge/maker-rpm",
-          "config": {}
+          "config": {
+            "options": {
+              "icon": "./src/fire.png"
+            }
+          }
         }
       ]
     }
   },
   "dependencies": {
+    "@electron-forge/maker-snap": "^6.0.0-beta.63",
+    "@mh-cbon/sudo-fs": "^1.0.17",
     "@mysql/xdevapi": "^8.0.28",
     "electron-osx-prompt": "^1.4.1",
     "electron-prompt": "^1.7.0",
@@ -52,8 +66,8 @@
     "electron-sudo": "^4.0.12",
     "jquery": "^3.6.0",
     "mysql": "^2.18.1",
-    "sudo-prompt": "^9.2.1",
-    "tailing-stream": "^0.2.0"
+    "sudo-js": "^1.0.2",
+    "sudo-prompt": "^9.2.1"
   },
   "devDependencies": {
     "@electron-forge/cli": "^6.0.0-beta.63",
@@ -61,6 +75,8 @@
     "@electron-forge/maker-rpm": "^6.0.0-beta.63",
     "@electron-forge/maker-squirrel": "^6.0.0-beta.63",
     "@electron-forge/maker-zip": "^6.0.0-beta.63",
-    "electron": "16.0.8"
+    "electron": "16.0.8",
+    "electron-builder": "^22.14.5",
+    "electron-installer-snap": "^5.1.0"
   }
 }

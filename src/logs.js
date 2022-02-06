@@ -1,7 +1,5 @@
 const ipc = window.require('electron').ipcRenderer;
-const { exec } = require("child_process");
-const path = require('path');
-let fixedURL = path.join(__dirname, '/scripts/');
+var sudo = require('sudo-js');
 
 const getLogsStatus = async () => {
     let response = await ipc.invoke('getGeneralLogsStatus');
@@ -14,8 +12,9 @@ document.getElementById('logs_switch').onchange = async (val) => {
 
 let fileSize = 0;
 const getFileSizeAndGetDataIfDifferent = (password ,closure ,logFile ) => {
-    exec(`${fixedURL}/getFileSize "${password}" ${logFile}`, (error, stdout, stderr) => {
-        const newFileSize = parseInt([...stdout.matchAll(/\d+/g)][1][0]);
+    let command = ['ls','-l', logFile];
+    sudo.exec(command, (error, pid, result) => {
+        const newFileSize = parseInt([...result.matchAll(/\d+/g)][1][0]);
         if (fileSize < newFileSize){
             closure();
         }
@@ -24,9 +23,11 @@ const getFileSizeAndGetDataIfDifferent = (password ,closure ,logFile ) => {
 }
 
 const getData = (password ,datatable ,logFile) => {
-    exec(`${fixedURL}/getFileContent "${password}" "${logFile}"`, (error, stdout, stderr) => {
+    let command = ['cat', logFile];
+
+    sudo.exec(command, (error, pid, result) => {
         const dataSet = [];
-        const data = [...stdout.matchAll(/((\d+-\d+-\w+:\d+:\d+.\w+)(\s+\d+\s)(.*)\n)/g)];
+        const data = [...result.matchAll(/((\d+-\d+-\w+:\d+:\d+.\w+)(\s+\d+\s)(.*)\n)/g)];
         data.forEach((datum) => {
             dataSet.push([datum[2],datum[3], datum[4]]);
         })
@@ -48,11 +49,24 @@ const longPolling = (password, datatable ,log_file) => {
 }
 
 
-const getUserRootPassword = async () => {
-    return await ipc.invoke('getUserRootPassword');
+const getUserRootPassword = async (action) => {
+    let password =  await ipc.invoke('getUserRootPassword');
+    if (password === null){
+        await ipc.invoke('close-app');
+    }
+    sudo.setPassword(password);
+
+    sudo.check( (isLoggedIn)=>{
+        if (!isLoggedIn){
+            getUserRootPassword(action);
+        }else{
+            action(password);
+        }
+    });
+
 }
 
-const runProject = async () => {
+(async () => {
     let datatable ;
     let log_file = await ipc.invoke('getGeneralLogsFilePath');
     $(document).ready(function() {
@@ -68,9 +82,9 @@ const runProject = async () => {
         } );
     });
     await getLogsStatus();
-    const password = await getUserRootPassword();
-    await getData(password ,datatable , log_file);
-    longPolling(password ,datatable , log_file);
-}
+    await getUserRootPassword(async (password) => {
+        await getData(password ,datatable , log_file);
+        longPolling(password ,datatable , log_file);
+    });
 
-runProject();
+})();
